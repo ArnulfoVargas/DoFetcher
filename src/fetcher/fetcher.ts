@@ -13,8 +13,11 @@ export const doFetch = async() => {
     const file = readFileSync(fileUri.fsPath, 'utf-8');
     const data = JSON.parse(file) as DoFetcher;
 
-    const fetchResultFilename = fileUri.fsPath.replace("fetcher.json", "fres.json"); 
-    writeFileSync(fetchResultFilename, JSON.stringify(data, null, 4));
+    if (vscode.workspace.workspaceFolders === undefined) {return;}
+
+    const p = vscode.workspace.workspaceFolders[0].uri;
+    const uri = vscode.Uri.joinPath(p, "fetchResults.json");
+    writeFileSync(uri.fsPath, JSON.stringify(data, null, 4));
 };
 
 export const createFetcher = () => {
