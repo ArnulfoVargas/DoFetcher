@@ -24,6 +24,10 @@
       {
         "command": "fetcher.workspace",
         "title": "Fetcher: Select Workspace"
+      },
+      {
+        "command": "fetcher.appState",
+        "title": "Fetcher: Select AppState"
       }
     ]
   },

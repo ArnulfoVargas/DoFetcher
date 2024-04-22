@@ -1,12 +1,13 @@
 export default DoFetcher;
 
 type DoFetcher = {
-    'host' : string,
-    'groups': Group | null,
-    'get': URL[] | null,
-    'post': URL[] | null,
-    'put': URL[] | null,
-    'delete': URL[] | null,
+    'app-states'?: string[], 
+    'host'?: string,
+    'groups'?: Group | null,
+    'get'?: URL[] | null,
+    'post'?: URL[] | null,
+    'put'?: URL[] | null,
+    'delete'?: URL[] | null,
 };
 
 type URL = {
