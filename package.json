@@ -20,6 +20,10 @@
       {
         "command": "fetcher.create",
         "title": "Fetcher: Create Fetcher"
+      },
+      {
+        "command": "fetcher.workspace",
+        "title": "Fetcher: Select Workspace"
       }
     ]
   },

@@ -1,11 +1,21 @@
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 import * as vscode from 'vscode';
 import DoFetcher from '../types/types';
+import { checkError } from './utils';
+
+let currentWorkSpaceFolder : vscode.WorkspaceFolder;
+
+export const init = () => {
+    if (vscode.workspace.workspaceFolders?.length === 1) {
+        currentWorkSpaceFolder = vscode.workspace.workspaceFolders[0];
+    }
+};
 
 export const doFetch = async() => {
-    const uris = await vscode.workspace.findFiles("fetcher.json");
-    const fileUri = uris[0];
-    if (!fileUri) {
+    if (checkError(currentWorkSpaceFolder)) {return;}
+
+    const fileUri = vscode.Uri.joinPath(currentWorkSpaceFolder.uri, "fetcher.json");
+    if (!existsSync(fileUri.fsPath)) {
         vscode.window.showErrorMessage("No fetcher.json file was found.");
         return;
     }
@@ -15,15 +25,34 @@ export const doFetch = async() => {
 
     if (vscode.workspace.workspaceFolders === undefined) {return;}
 
-    const p = vscode.workspace.workspaceFolders[0].uri;
+    const p = currentWorkSpaceFolder.uri;
     const uri = vscode.Uri.joinPath(p, "fetchResults.json");
+
+
     writeFileSync(uri.fsPath, JSON.stringify(data, null, 4));
+
 };
 
-export const createFetcher = () => {
-    if (vscode.workspace.workspaceFolders === undefined) {return;}
+export const selectCurrentWorkspace = () => {
+    if (vscode.workspace.workspaceFolders === undefined) {
+        vscode.window.showErrorMessage("Open a project.");
+        return true;
+    }
+    vscode.window.showWorkspaceFolderPick({
+        ignoreFocusOut :true,
+        placeHolder: "Select a workspace folder"
+    }).then(v => {
+        if (v === undefined) { return; }
+        currentWorkSpaceFolder = v;
 
-    const p = vscode.workspace.workspaceFolders[0].uri;
+        vscode.window.showInformationMessage(`Selected '${currentWorkSpaceFolder.name}' as workspace.`);
+    });
+};
+
+export const createFetcher = async() => {
+    if (checkError(currentWorkSpaceFolder)) {return;}
+
+    const p = currentWorkSpaceFolder.uri;
     const uri = vscode.Uri.joinPath(p, "fetcher.json");
     writeFileSync(uri.fsPath, `{
     "host"      : "",
