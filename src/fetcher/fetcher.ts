@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 import {DoFetcher} from '../types/types';
 import { checkError } from './utils';
 import { Explore } from './searcher';
-import { RegisterCompletition } from './autocompletition';
 
 let currentWorkSpaceFolder : vscode.WorkspaceFolder;
 let appContext : vscode.ExtensionContext;
