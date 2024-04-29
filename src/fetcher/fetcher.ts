@@ -1,7 +1,9 @@
 import { readFileSync, writeFileSync, existsSync, watchFile } from 'fs';
 import * as vscode from 'vscode';
-import DoFetcher from '../types/types';
+import {DoFetcher} from '../types/types';
 import { checkError } from './utils';
+import { Explore } from './searcher';
+import { RegisterCompletition } from './autocompletition';
 
 let currentWorkSpaceFolder : vscode.WorkspaceFolder;
 let appContext : vscode.ExtensionContext;
@@ -12,9 +14,8 @@ let isTracking = false;
 
 export const init = (context : vscode.ExtensionContext) => {
     appContext = context;
-    if (vscode.workspace.workspaceFolders?.length === 1) {
-        currentWorkSpaceFolder = vscode.workspace.workspaceFolders[0];
-    }
+
+    checkHasOneWorkspaceForlder();
 
     if(appContext.workspaceState.get<string>("c-app-state" ) === undefined) {
         appContext.globalState.update("c-app-state", "Development");
@@ -33,17 +34,21 @@ export const init = (context : vscode.ExtensionContext) => {
         isTracking = true;
         findFile(); 
     });
-    
 };
 
 export const doFetch = async() => {
     if (checkError(currentWorkSpaceFolder)) {return;}
+    if (fetcher === undefined) {
+        vscode.window.showErrorMessage("Couldn't find a fetcher file");
+        return;
+    }
+
+    Explore(fetcher, currentAppState);
 
     const p = currentWorkSpaceFolder.uri;
     const uri = vscode.Uri.joinPath(p, "fetchResults.json");
 
     writeFileSync(uri.fsPath, JSON.stringify(fetcher, null, 4));
-
 };
 
 export const selectCurrentWorkspace = () => {
@@ -96,16 +101,14 @@ export const createFetcher = async() => {
 export const selectAppState = async() => {
     if (checkError(currentWorkSpaceFolder)) {return;}
 
-    if (fetcher === undefined || fetcher['app-states'] === undefined || fetcher['app-states'].length < 1) {
-        vscode.window.showErrorMessage("Add some AppStates at the fetcher.json");
-        storeAppState("Development");
+    if (checkForEmptyAppStates()) {
         return;
     }
 
-    vscode.window.showQuickPick(appStates).then(v => {
-        if (v === undefined) {return;}
+    vscode.window.showQuickPick(appStates).then(value => {
+        if (value === undefined) {return;}
 
-        storeAppState(v);
+        storeAppState(value);
     });
 };
 
@@ -131,12 +134,41 @@ function findFile() {
     if (path === null) {return;}
     const file = readFileSync(path, 'utf-8');
     fetcher = JSON.parse(file) as DoFetcher;
-    if (fetcher['app-states'] === undefined || fetcher['app-states'].length < 1) {
+
+    fetcher['app-states'] = fetcher['app-states']?.filter(v=>v.trim() !== "");
+
+    if (fetcher === undefined || fetcher['app-states'] === undefined || fetcher['app-states'].length < 1) {
+        appStates = [];
         vscode.window.showErrorMessage("Add some AppStates at the fetcher.json");
-        storeAppState("Development");
+        storeAppState("Any");
         return;
-    } else if (fetcher['app-states'].length === 1){
-        storeAppState(fetcher['app-states'][0]);
     }
     appStates = fetcher['app-states'];
+
+    if (checkForEmptyAppStates()) {
+        return;
+    }
+}
+
+function checkHasOneWorkspaceForlder() {
+    if (vscode.workspace.workspaceFolders?.length === 1) {
+        currentWorkSpaceFolder = vscode.workspace.workspaceFolders[0];
+        return true;
+    }
+    return false;
+}
+
+function checkForEmptyAppStates() {
+    if (appStates.length === 1) {
+        storeAppState(appStates[0]);
+        return true;
+    }
+
+    if (fetcher === undefined || fetcher['app-states'] === undefined || fetcher['app-states'].length < 1) {
+        vscode.window.showErrorMessage("Add some AppStates at the fetcher.json");
+        storeAppState("Any");
+        return true;
+    }
+
+    return false;
 }

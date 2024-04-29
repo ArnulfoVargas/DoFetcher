@@ -1,27 +1,30 @@
-export default DoFetcher;
-
-type DoFetcher = {
+type Fetcher = {
     'app-states'?: string[], 
     'host'?: string,
-    'groups'?: Group | null,
-    'get'?: URL[] | null,
-    'post'?: URL[] | null,
-    'put'?: URL[] | null,
-    'delete'?: URL[] | null,
+    'groups'?: Group[],
+    'get'?: URL[],
+    'post'?: URL[],
+    'put'?: URL[],
+    'delete'?: URL[],
 };
 
-type URL = {
+type Url = {
     "path": string,
-    "status": string | null,
-    "headers": object | null,
+    "status": string | undefined,
+    "headers": object | undefined,
 };
 
 type Group = {
-    'name': string | null,
-    'prefix': string | null,
-    'get': URL[] | null,
-    'post': URL[] | null,
-    'put': URL[] | null,
-    'delete': URL[] | null,
-    'subgroup' : Group[] | null,
+    'app-state'?:string,
+    'name': string | undefined,
+    'prefix': string | undefined,
+    'get': URL[] | undefined,
+    'post': URL[] | undefined,
+    'put': URL[] | undefined,
+    'delete': URL[] | undefined,
+    'subgroup': Group[] | undefined,
 };
+
+export type DoFetcher = Fetcher;
+export type URL = Url;
+export type UrlGroup = Group;
